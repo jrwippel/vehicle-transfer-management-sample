@@ -1,0 +1,650 @@
+﻿@model WebAppSystemsTransp.Models.Pedido
+@using WebAppSystemsTransp.Models.Enums
+
+@{
+    ViewData["Title"] = "Create";
+}
+<style>
+    #suggestionsCliente {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+    }
+
+        #suggestionsCliente button {
+            text-align: left;
+        }
+</style>
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">Registro de Atividades</h4>
+        <hr />
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" id="VeiculoId" name="VeiculoId" />
+            <div class="form-group position-relative">
+                <label for="VeiculoPlaca" class="control-label">Placa do Veículo</label>
+                <div class="input-group">
+                    <input type="text" id="VeiculoPlaca" class="form-control" placeholder="Digite a placa do veículo" autocomplete="off" style="text-transform: uppercase;" />
+                </div>
+                <div id="suggestions" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
+                <span id="VeiculoValidation" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group position-relative">
+                <label for="ClienteNome" class="control-label">Cliente Carga</label>
+                <div class="input-group">
+                    <!-- Campo para digitar e exibir cliente -->
+                    <input type="text" id="ClienteNome" class="form-control" placeholder="Digite o cliente da carga" autocomplete="off" style="text-transform: uppercase;" />
+                    <!-- Campo oculto para armazenar o ID do cliente -->
+                    <input type="hidden" id="ClienteCargaId" name="ClienteCargaId" />
+                </div>
+                <!-- Área de sugestões -->
+                <div id="suggestionsCliente" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
+                <span id="ClienteValidation" class="text-danger"></span>
+            </div>
+
+            <div class="form-group position-relative">
+                <label for="ClienteNomeDes" class="control-label">Cliente Descarga</label>
+                <div class="input-group">
+                    <!-- Campo para digitar e exibir cliente -->
+                    <input type="text" id="ClienteNomeDes" class="form-control" placeholder="Digite o cliente da descarga" autocomplete="off" style="text-transform: uppercase;" />
+                    <!-- Campo oculto para armazenar o ID do cliente -->
+                    <input type="hidden" id="ClienteDescargaId" name="ClienteDescargaId" />
+                </div>
+                <!-- Área de sugestões -->
+                <div id="suggestionsClienteDes" class="list-group position-absolute w-100" style="z-index: 1000; display: none;"></div>
+                <span id="ClienteValidationDes" class="text-danger"></span>
+            </div>
+            <!--
+            <div class="form-group">
+                <label asp-for="ClienteDescargaId" class="control-label">Cliente Descarga</label>
+                <select asp-for="ClienteDescargaId" class="form-control" asp-items="ViewBag.Clientes">
+                    <option value="">Selecione um Cliente</option>
+                </select>
+                <span asp-validation-for="ClienteDescargaId" class="text-danger"></span>
+            </div>
+            -->
+            <div class="form-group">
+                <label asp-for="DataPretendida" class="control-label"></label>
+                <input asp-for="DataPretendida" class="form-control" value="@ViewBag.DataPretendida" type="date" />
+                <span asp-validation-for="DataPretendida" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group">
+                <label asp-for="AdicionalCarga" class="control-label"></label>
+                <input asp-for="AdicionalCarga" class="form-control" />
+                <span asp-validation-for="AdicionalCarga" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="AdicionalDescarga" class="control-label"></label>
+                <input asp-for="AdicionalDescarga" class="form-control" />
+                <span asp-validation-for="AdicionalDescarga" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="MotoristaId" class="control-label"></label>
+                <select asp-for="MotoristaId" asp-items="ViewBag.Motoristas" class="form-control"></select>
+                <span asp-validation-for="MotoristaId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="TipoPedido" class="control-label"></label>
+                <select asp-for="TipoPedido" class="form-control">
+                    <option value="">Selecione um Tipo de Pedido</option>
+                    @if (ViewBag.TipoPedidoOptions != null)
+                    {
+                        foreach (var tipo in ViewBag.TipoPedidoOptions as List<TipoPedidoEnum>)
+                        {
+                            <option value="@tipo">@tipo.ToString()</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="TipoPedido" class="text-danger"></span>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para cadastrar cliente -->
+<div class="modal fade" id="modalCadastrarClienteDes" tabindex="-1" role="dialog" aria-labelledby="modalCadastrarClienteDesLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCadastrarClienteDesLabel">Cadastrar Novo Cliente (Descarga) </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formCadastrarClienteDes">
+                    <input type="hidden" id="ClienteDescargaId" name="ClienteDescargaId" />
+                    <div class="form-group">
+                        <label for="NomeDes">Nome</label>
+                        <!-- Removido o atributo readonly -->
+                        <input type="text" id="NomeDes" class="form-control" placeholder="Digite o nome do cliente" style="text-transform: uppercase;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="LocalDes">Local</label>
+                        <input type="text" id="LocalDes" class="form-control" placeholder="Digite o Local do cliente" />
+                    </div>
+                    <div class="form-group">
+                        <label for="EmailDes">Email</label>
+                        <input type="text" id="EmailDes" class="form-control" placeholder="Digite o email do cliente" />
+                    </div>
+                    <div class="form-group">
+                        <label for="TelefoneDes">Telefone</label>
+                        <input type="text" id="TelefoneDes" class="form-control" placeholder="Digite o Telefone do cliente" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelarClienteDes">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnCadastrarClienteDes">Cadastrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para cadastrar cliente -->
+<div class="modal fade" id="modalCadastrarCliente" tabindex="-1" role="dialog" aria-labelledby="modalCadastrarClienteLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCadastrarClienteCargaLabel">Cadastrar Novo Cliente(Carga) </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formCadastrarCliente">
+                    <input type="hidden" id="ClienteId" name="ClienteId" />
+                    <div class="form-group">
+                        <label for="Nome">Nome</label>
+                        <!-- Removido o atributo readonly -->
+                        <input type="text" id="Nome" class="form-control" placeholder="Digite o nome do cliente" style="text-transform: uppercase;" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Local">Local</label>
+                        <input type="text" id="Local" class="form-control" placeholder="Digite o Local do cliente" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Email">Email</label>
+                        <input type="text" id="Email" class="form-control" placeholder="Digite o email do cliente" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Telefone">Telefone</label>
+                        <input type="text" id="Telefone" class="form-control" placeholder="Digite o Telefone do cliente" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelarClienteCar">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnCadastrarCliente">Cadastrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para cadastrar veículo -->
+<div class="modal fade" id="modalCadastrarVeiculo" tabindex="-1" role="dialog" aria-labelledby="modalCadastrarVeiculoLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCadastrarVeiculoLabel">Cadastrar Novo Veículo</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formCadastrarVeiculo">
+                    <input type="hidden" id="VeiculoId" name="VeiculoId" />
+
+                    <div class="form-group">
+                        <label for="VeiculoMarca">Marca</label>
+                        <select id="VeiculoMarca" class="form-control">
+                            <!-- As marcas serão carregadas dinamicamente aqui -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="VeiculoModelo">Modelo</label>
+                        <select id="VeiculoModelo" class="form-control">
+                            <!-- As modelos serão carregadas dinamicamente aqui -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="Matricula">Matrícula</label>
+                        <input type="text" id="Matricula" class="form-control" placeholder="XX-XX-XX" maxlength="8" required style="text-transform: uppercase;" />
+                    </div>
+
+                    <label for="matriculaEstrangeira">
+                        <input type="checkbox" id="matriculaEstrangeira" onclick="toggleFormato()"> Matrícula Estrangeira
+                    </label>
+
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="btnCancelarVeiculos">Cancelar</button>                
+                <button type="button" class="btn btn-primary" id="btnCadastrarVeiculo">Cadastrar</button>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+
+    <script>
+
+        function toggleFormato() {
+            const formatoEstrangeiro = document.getElementById('matriculaEstrangeira').checked;
+            const placaInput = document.getElementById('Matricula');
+
+            if (formatoEstrangeiro) {
+                // Desativa a máscara e permite qualquer entrada
+                placaInput.placeholder = "Digite a matrícula sem formato";
+                placaInput.removeAttribute('maxlength');
+            } else {
+                // Aplica a máscara de formato português
+                placaInput.placeholder = "XX-XX-XX";
+                placaInput.setAttribute('maxlength', '8');
+            }
+        }
+
+        $(document).ready(function () {
+
+            // Carrega as marcas quando a modal for aberta
+            $("#modalCadastrarVeiculo").on('shown.bs.modal', function () {
+                // Faz a requisição para buscar as marcas
+                $.get('/Pedidos/GetMarcas', function (data) {
+                    const marcaSelect = $("#VeiculoMarca"); // Combo box de marcas
+                    marcaSelect.empty(); // Limpa as opções anteriores
+
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        // Adiciona uma opção padrão
+                        marcaSelect.append('<option value="">Selecione a Marca</option>');
+
+                        // Adiciona as marcas no combo, agora com ID e Nome
+                        data.forEach(function (marca) {
+                            marcaSelect.append(`<option value="${marca.id}">${marca.nome}</option>`);
+                        });
+                    }
+                }).fail(function (error) {
+                    console.error("Erro ao carregar as marcas:", error);
+                });
+            });
+
+
+            $(".close").on("click", function () {
+                $(".modal").modal("hide"); // Fecha todas as modais abertas
+            });
+            $("#btnCancelarVeiculos").on("click", function () {
+                $("#modalCadastrarVeiculo").modal("hide");
+            });
+
+            $("#btnCancelarClienteDes").on("click", function () {
+                $("#modalCadastrarClienteDes").modal("hide");
+            });
+
+            $("#btnCancelarClienteCar").on("click", function () {
+                $("#modalCadastrarCliente").modal("hide");
+            });
+            // Evento de input no campo de placa
+            $("#VeiculoPlaca").on("input", function () {
+
+                // Converte o texto para maiúsculo
+                $(this).val($(this).val().toUpperCase());
+
+                const placa = $(this).val(); // Valor digitado no campo
+
+                // Checa se tem pelo menos 2 caracteres para iniciar a busca
+                if (placa.length >= 2) {
+                    // Faz a requisição ao backend
+                    $.get('/Pedidos/PesquisarVeiculo', { placa }, function (data) {
+                        console.log("Resposta do backend:", data); // Log da resposta
+
+                        const suggestions = $("#suggestions"); // Div de sugestões
+                        suggestions.empty(); // Limpa sugestões anteriores
+
+                        if (data && Array.isArray(data) && data.length > 0) {
+
+                            console.log("diciona os resultados como botões na lista de sugestões:", data); // Log da resposta
+
+                            // Adiciona os resultados como botões na lista de sugestões
+                            data.forEach(item => {
+                                suggestions.append(`
+                                                        <button type="button" class="list-group-item list-group-item-action"
+                                                            data-id="${item.id}" data-placa="${item.matricula}" data-modelo="${item.modelo}">
+                                                            ${item.matricula} - ${item.modelo}
+                                                        </button>
+                                                    `);
+                            });
+                            suggestions.show(); // Mostra a lista de sugestões
+                        } else {
+                            suggestions.hide(); // Esconde se não houver resultados
+                            // Caso não existam resultados, mostre a modal
+                            $("#modalCadastrarVeiculo").modal("show");
+                        }
+                    }).fail(function (error) {
+                        console.error("Erro na requisição:", error); // Log de erro na requisição
+                    });
+                } else {
+                    $("#suggestions").hide(); // Esconde a lista se houver menos de 2 caracteres
+                }
+            });
+
+            // Evento de clique em uma sugestão
+            $(document).on("click", "#suggestions button", function () {
+                const placa = $(this).data("placa"); // Obtém a placa selecionada
+                const veiculoId = $(this).data("id"); // Pega o ID do veículo
+                $("#VeiculoId").val(veiculoId);
+                $("#VeiculoPlaca").val(placa); // Define o valor do input com a placa selecionada
+                $("#suggestions").hide(); // Esconde a lista de sugestões
+            });
+
+            $("#btnCadastrarVeiculo").on("click", function () {
+                const novaPlaca = $("#Matricula").val(); // Obtém a placa digitada na modal
+                const modeloId = $("#VeiculoModelo").val(); // Obtém o ID do modelo selecionado
+                const marca = $("#VeiculoMarca").val(); // Campo da modal para a marca
+                const matriculaEstrangeira = document.getElementById('matriculaEstrangeira').checked;
+
+                console.log("Iniciando cadastro");
+                console.log("Placa digitada:", novaPlaca);
+                console.log("Modelo ID:", modeloId);
+                console.log("Marca digitada:", marca);
+
+                if (novaPlaca && modeloId && marca) {
+                    console.log("Dados a serem enviados:", { matricula: novaPlaca, modeloId: modeloId, marca: marca });
+
+                    $.ajax({
+                        url: '/Pedidos/CadastrarVeiculo',
+                        method: 'POST',
+                        data: {
+                            matricula: novaPlaca,
+                            modeloId: modeloId, // Envia corretamente o modeloId
+                            marca: marca,
+                            matriculaEstrangeira: matriculaEstrangeira
+
+                        },
+                        success: function (response) {
+                            console.log("Veículo cadastrado:", response);
+                            if (response.success) {
+                                $("#VeiculoPlaca").val(response.matricula);
+                                $("#VeiculoId").val(response.veiculoId);
+
+                                alert("Veículo cadastrado com sucesso!");
+                                $("#modalCadastrarVeiculo").modal("hide");
+                                $("#VeiculoModelo").val("");
+                                $("#Matricula").val("");
+                                $("#VeiculoMarca").val("");
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Erro ao cadastrar veículo:", error);
+                            alert("Erro ao cadastrar o veículo. Tente novamente.");
+                        }
+                    });
+                } else {
+                    alert("Por favor, preencha todos os campos.");
+                }
+            });
+
+
+
+            //--Clientes
+
+            $("#ClienteNome").on("input", function () {
+                $(this).val($(this).val().toUpperCase()); // Converte para maiúsculas
+
+                const nome = $(this).val();
+
+                if (nome.length >= 2) {
+                    // Faz a requisição ao backend
+                    $.get('/Pedidos/PesquisarCliente', { nome }, function (data) {
+                        console.log("Resposta do backend para clientes:", data); // Log da resposta
+
+                        const suggestions = $("#suggestionsCliente");
+                        suggestions.empty(); // Limpa sugestões anteriores
+
+                        if (data && Array.isArray(data) && data.length > 0) {
+                            // Adiciona sugestões na lista com nome e local
+                            data.forEach(item => {
+                                suggestions.append(`
+                                                        <button type="button" class="list-group-item list-group-item-action"
+                                                            data-id="${item.id}" data-nome="${item.nome}" data-local="${item.local}">
+                                                            ${item.nome} - ${item.local}
+                                                        </button>
+                                                    `);
+                            });
+
+                            suggestions.show(); // Exibe a lista de sugestões
+                        } else {
+                            suggestions.hide(); // Esconde se não houver resultados
+                            // Caso não existam resultados, mostre a modal
+                            $("#modalCadastrarCliente").modal("show");
+                        }
+                    });
+                } else {
+                    $("#suggestionsCliente").hide(); // Esconde caso menos de 2 caracteres
+                }
+            });
+
+            // Ao clicar em uma sugestão de cliente
+            $("#suggestionsCliente").on("click", "button", function () {
+                const id = $(this).data("id");
+                const nome = $(this).data("nome");
+                const local = $(this).data("local");
+
+                // Preenche os campos com os dados do cliente selecionado
+                $("#ClienteCargaId").val(id); // Campo oculto para o ID do cliente
+                $("#ClienteNome").val(`${nome} - ${local}`); // Nome e local no campo de texto
+
+                // Esconde a lista de sugestões
+                $("#suggestionsCliente").hide();
+            });
+
+            $("#btnCadastrarCliente").on("click", function () {
+                const nome = $("#Nome").val().trim();
+                const local = $("#Local").val().trim();
+                const email = $("#Email").val().trim();
+                const telefone = $("#Telefone").val().trim();
+
+                console.log("Dados a cadastrar na tela:", nome, local, email, telefone);
+
+                if (nome && local && email && telefone) {
+                    // Dados do cliente a serem enviados
+                    const clienteData = { nome, local, email, telefone };
+
+                    console.log("Dados a cadastrar:", clienteData);
+
+                    $.ajax({
+                        url: '/Pedidos/CadastrarCliente',
+                        method: 'POST',
+                        data: clienteData,
+                        success: function (response) {
+                            if (response.success) {
+                                alert("Cliente cadastrado com sucesso!");
+
+                                // Preenche os campos com os dados do cliente recém-cadastrado
+                                $("#ClienteCargaId").val(response.clienteId);
+                                $("#ClienteNome").val(`${response.nome} - ${response.local}`);
+
+                                // Fecha a modal e limpa os campos
+                                $("#modalCadastrarCliente").modal("hide");
+                                $("#formCadastrarCliente").trigger("reset");
+                            } else {
+                                alert(response.message || "Erro ao cadastrar cliente.");
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Erro ao cadastrar cliente:", error);
+                            alert("Erro ao cadastrar o cliente. Tente novamente.");
+                        }
+                    });
+                } else {
+                    alert("Por favor, preencha todos os campos.");
+                }
+            });
+
+            $("#ClienteNomeDes").on("input", function () {
+                $(this).val($(this).val().toUpperCase()); // Converte para maiúsculas
+
+                const nome = $(this).val();
+
+                if (nome.length >= 2) {
+                    // Faz a requisição ao backend
+                    $.get('/Pedidos/PesquisarCliente', { nome }, function (data) {
+                        console.log("Resposta do backend para clientes:", data); // Log da resposta
+
+                        const suggestions = $("#suggestionsClienteDes");
+                        suggestions.empty(); // Limpa sugestões anteriores
+
+                        if (data && Array.isArray(data) && data.length > 0) {
+                            // Adiciona sugestões na lista com nome e local
+                            data.forEach(item => {
+                                suggestions.append(`
+                                                                <button type="button" class="list-group-item list-group-item-action"
+                                                                    data-id="${item.id}" data-nome="${item.nome}" data-local="${item.local}">
+                                                                    ${item.nome} - ${item.local}
+                                                                </button>
+                                                            `);
+                            });
+
+                            suggestions.show(); // Exibe a lista de sugestões
+                        } else {
+                            suggestions.hide(); // Esconde se não houver resultados
+                            // Caso não existam resultados, mostre a modal
+                            $("#modalCadastrarClienteDes").modal("show");
+                        }
+                    });
+                } else {
+                    $("#suggestionsClienteDes").hide(); // Esconde caso menos de 2 caracteres
+                }
+            });
+
+            // Ao clicar em uma sugestão de cliente
+            $("#suggestionsClienteDes").on("click", "button", function () {
+                const id = $(this).data("id");
+                const nome = $(this).data("nome");
+                const local = $(this).data("local");
+
+                // Preenche os campos com os dados do cliente selecionado
+                $("#ClienteDescargaId").val(id); // Campo oculto para o ID do cliente
+                $("#ClienteNomeDes").val(`${nome} - ${local}`); // Nome e local no campo de texto
+
+                // Esconde a lista de sugestões
+                $("#suggestionsClienteDes").hide();
+            });
+
+            $("#btnCadastrarClienteDes").on("click", function () {
+                const nome = $("#NomeDes").val().trim();
+                const local = $("#LocalDes").val().trim();
+                const email = $("#EmailDes").val().trim();
+                const telefone = $("#TelefoneDes").val().trim();
+
+                console.log("Dados a cadastrar na tela(descarga):", nome, local, email, telefone);
+
+                if (nome && local && email && telefone) {
+                    // Dados do cliente a serem enviados
+                    const clienteData = { nome, local, email, telefone };
+
+                    console.log("Dados a cadastrar:", clienteData);
+
+                    $.ajax({
+                        url: '/Pedidos/CadastrarCliente',
+                        method: 'POST',
+                        data: clienteData,
+                        success: function (response) {
+                            if (response.success) {
+                                alert("Cliente cadastrado com sucesso!");
+
+                                // Preenche os campos com os dados do cliente recém-cadastrado
+                                $("#ClienteDescargaId").val(response.clienteId);
+                                $("#ClienteNomeDes").val(`${response.nome} - ${response.local}`);
+
+                                // Fecha a modal e limpa os campos
+                                $("#modalCadastrarClienteDes").modal("hide");
+                                $("#formCadastrarClienteDes").trigger("reset");
+                            } else {
+                                alert(response.message || "Erro ao cadastrar cliente.");
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Erro ao cadastrar cliente:", error);
+                            alert("Erro ao cadastrar o cliente. Tente novamente.");
+                        }
+                    });
+                } else {
+                    alert("Por favor, preencha todos os campos.");
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var marcaDropdown = document.getElementById("VeiculoMarca");
+            var modeloDropdown = document.getElementById("VeiculoModelo");
+
+            // Buscar e carregar as marcas ao carregar a página
+            $.get('/Veiculos/GetMarcas', function (data) {
+                console.log("Marcas recebidas:", data);
+                marcaDropdown.innerHTML = '<option value="">Selecione uma marca...</option>';
+
+                data.forEach(function (marca) {
+                    var option = document.createElement("option");
+                    option.value = marca.id; // Agora ID correto
+                    option.text = marca.nome;
+                    marcaDropdown.appendChild(option);
+                });
+            }).fail(function (error) {
+                console.error("Erro ao buscar marcas:", error);
+            });
+
+            // Evento para carregar os modelos ao selecionar uma marca
+            marcaDropdown.addEventListener("change", function () {
+                var marcaId = marcaDropdown.value;
+                console.log("Marca selecionada (ID):", marcaId); // Agora deve exibir o ID corretamente
+
+                if (!marcaId) {
+                    modeloDropdown.innerHTML = '<option value="">Selecione um modelo...</option>';
+                    return;
+                }
+
+                // Busca os modelos da marca selecionada
+                $.get('/Veiculos/GetModelosPorMarca', { marcaId }, function (data) {
+                    console.log("Modelos recebidos:", data);
+                    modeloDropdown.innerHTML = '<option value="">Selecione um modelo...</option>';
+
+                    data.forEach(function (modelo) {
+                        var option = document.createElement("option");
+                        option.value = modelo.id;
+                        option.text = modelo.nome;
+                        modeloDropdown.appendChild(option);
+                    });
+                }).fail(function (error) {
+                    console.error("Erro ao buscar modelos:", error);
+                });
+            });
+        });
+
+    </script>
+
+}

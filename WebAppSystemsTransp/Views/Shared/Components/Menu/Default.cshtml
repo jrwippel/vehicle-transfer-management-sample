@@ -1,0 +1,131 @@
+﻿@using WebAppSystems.Models.Enums
+@model Attorney
+<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">@Model.Name's workspace</a>
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+        aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+</button>
+<div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+    <ul class="navbar-nav flex-grow-1">
+        <li class="nav-item" title="Home">
+            <div class="text-center">
+                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-home fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Home"></i>
+                    <span class="d-block">Home</span>
+                </a>
+            </div>
+        </li>
+
+        @if (Model.Perfil == ProfileEnum.Admin)
+        {
+            <!--
+            <li class="nav-item" title="Configurações">
+                <div class="text-center">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Importacao" asp-action="Index">
+                        <i class="fas fa-users fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Importaçao"></i>
+                        <span class="d-block">Importacao</span>
+                    </a>
+                </div>
+            </li>
+
+            -->
+
+            <li class="nav-item" title="Usuários">
+                <div class="text-center">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Attorneys" asp-action="Index">
+                        <i class="fas fa-users fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Usuários"></i>
+                        <span class="d-block">Usuários</span>
+                    </a>
+                </div>
+            </li>
+            <li class="nav-item" title="Marcas">
+                <div class="text-center">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Marcas" asp-action="Index">
+                        <i class="fas fa-tags fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Marcas"></i>
+                        <span class="d-block">Marcas</span>
+                    </a>
+                </div>
+            </li>
+
+            <li class="nav-item" title="Modelos">
+                <div class="text-center">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Modelos" asp-action="Index">
+                        <i class="fas fa-car fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Modelos"></i>
+                        <span class="d-block">Modelos</span>
+                    </a>
+                </div>
+            </li>
+
+
+            <li class="nav-item" title="Clientes">
+                <div class="text-center">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Clientes" asp-action="Index">
+                        <!-- Ícone relacionado a clientes -->
+                        <i class="fas fa-users fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Clientes"></i>
+                        <span class="d-block">Clientes</span>
+                    </a>
+                </div>
+            </li>
+
+            <li class="nav-item" title="Veiculos">
+                <div class="text-center">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Veiculos" asp-action="Index">
+                        <!-- Ícone relacionado a veículos (Caminhão) -->
+                        <i class="fas fa-truck fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Veiculos"></i>
+                        <span class="d-block">Veiculos</span>
+                    </a>
+                </div>
+            </li>
+
+            <li class="nav-item" title="Pedidos">
+                <div class="text-center">
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Pedidos" asp-action="Index">
+                        <!-- Ícone relacionado a pedidos -->
+                        <i class="fas fa-shopping-cart fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Pedidos"></i>
+                        <span class="d-block">Pedidos</span>
+                    </a>
+                </div>
+            </li>
+
+        }
+
+        <li class="nav-item" title="Recolhas">
+            <div class="text-center">
+                <a class="nav-link text-dark" asp-area="" asp-controller="Recolhas" asp-action="Index">
+                    <!-- Ícone relacionado a veículos (Caminhão) -->
+                    <i class="fas fa-truck fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Recolhas"></i>
+                    <span class="d-block">Recolhas</span>
+                </a>
+            </div>
+        </li>
+        
+        <li class="nav-item" title="Alterar Senha">
+            <div class="text-center">
+                <a class="nav-link text-dark" asp-area="" asp-controller="AlterarSenha" asp-action="Index">
+                    <i class="fas fa-lock fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Alterar Senha"></i>
+                    <span class="d-block">Senha</span>
+                </a>
+            </div>
+        </li>
+        <li class="nav-item" title="Sair">
+            <div class="text-center">
+                <a class="nav-link text-dark" asp-area="" asp-controller="Login" asp-action="Sair">
+                    <i class="fas fa-sign-out-alt fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Sair"></i>
+                    <span class="d-block">Sair</span>
+                </a>
+            </div>
+        </li>
+        <li class="nav-item" title="Sobre">
+            <div class="text-center">
+                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">
+                    <i class="fas fa-info-circle fa-2x mb-2 d-block border rounded p-2" data-toggle="tooltip" title="Sobre"></i>
+                    <span class="d-block">Sobre</span>
+                </a>
+            </div>
+        </li>
+    </ul>
+</div>
+
+
+
+
