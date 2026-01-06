@@ -1,0 +1,111 @@
+﻿@using WebAppSystems.Models.Enums
+@model Attorney
+
+@{
+    ViewData["Title"] = "TrackWise";
+}
+
+<h1 class="text-center mb-4">@ViewData["Title"]</h1>
+
+<div class="container">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+        <!-- Home Card -->
+        <div class="col">
+            <div class="card text-center shadow border-0" style="background-color: #f8f9fa;">
+                <div class="card-body">
+                    <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-dark">
+                        <i class="fas fa-home fa-3x mb-3"></i>
+                        <h5 class="card-title">Home</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin-Only Cards -->
+        @if (Model.Perfil == ProfileEnum.Admin)
+        {
+            <div class="col">
+                <div class="card text-center shadow border-0" style="background-color: #e2eafc;">
+                    <div class="card-body">
+                        <a asp-controller="Attorneys" asp-action="Index" class="text-decoration-none text-dark">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <h5 class="card-title">Usuários</h5>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-center shadow border-0" style="background-color: #d1f7c4;">
+                    <div class="card-body">
+                        <a asp-controller="Clientes" asp-action="Index" class="text-decoration-none text-dark">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <h5 class="card-title">Clientes</h5>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-center shadow border-0" style="background-color: #fff4d3;">
+                    <div class="card-body">
+                        <a asp-controller="Veiculos" asp-action="Index" class="text-decoration-none text-dark">
+                            <i class="fas fa-truck fa-3x mb-3"></i>
+                            <h5 class="card-title">Veículos</h5>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-center shadow border-0" style="background-color: #ffd6d6;">
+                    <div class="card-body">
+                        <a asp-controller="Pedidos" asp-action="Index" class="text-decoration-none text-dark">
+                            <i class="fas fa-shopping-cart fa-3x mb-3"></i>
+                            <h5 class="card-title">Pedidos</h5>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- General Cards -->
+        <div class="col">
+            <div class="card text-center shadow border-0" style="background-color: #d1f7c4;">
+                <div class="card-body">
+                    <a asp-controller="Recolhas" asp-action="Index" class="text-decoration-none text-dark">
+                        <i class="fas fa-truck fa-3x mb-3"></i>
+                        <h5 class="card-title">Recolhas</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-center shadow border-0" style="background-color: #fdebd3;">
+                <div class="card-body">
+                    <a asp-controller="AlterarSenha" asp-action="Index" class="text-decoration-none text-dark">
+                        <i class="fas fa-lock fa-3x mb-3"></i>
+                        <h5 class="card-title">Senha</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-center shadow border-0" style="background-color: #ffd6d6;">
+                <div class="card-body">
+                    <a asp-controller="Login" asp-action="Sair" class="text-decoration-none text-dark">
+                        <i class="fas fa-sign-out-alt fa-3x mb-3"></i>
+                        <h5 class="card-title">Sair</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-center shadow border-0" style="background-color: #dbeffa;">
+                <div class="card-body">
+                    <a asp-controller="Home" asp-action="About" class="text-decoration-none text-dark">
+                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                        <h5 class="card-title">Sobre</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

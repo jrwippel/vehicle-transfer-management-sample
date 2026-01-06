@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreamento do Veículo</title>
+</head>
+<body>
+    <h2>Monitoramento de Veículo</h2>
+    <p id="status">Obtendo localização...</p>
+
+    <script>
+
+        // Função para enviar a localização ao servidor
+        function sendLocation(lat, lng) {
+            console.log(`Enviando localização: ${lat}, ${lng}`);
+            fetch('/Location/Update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    vehicleId: 1,
+                    latitude: lat,
+                    longitude: lng
+                })
+            }).then(response => {
+                console.log('Resposta do servidor:', response);
+            }).catch(error => {
+                console.error('Erro ao enviar localização:', error);
+            });
+        }
+
+        // Função para rastrear a localização do veículo
+        function trackLocation() {
+            if ("geolocation" in navigator) {
+                console.log('Iniciando trackLocation');
+                navigator.geolocation.watchPosition(position => {
+                    let lat = position.coords.latitude;
+                    let lng = position.coords.longitude;
+                    document.getElementById("status").innerText = `Localização: ${lat}, ${lng}`;
+                    sendLocation(lat, lng);  // Envia a localização para o servidor
+                }, error => {
+                    console.error("Erro ao obter localização:", error);
+                }, { enableHighAccuracy: true });
+            } else {
+                alert("Seu navegador não suporta geolocalização!");
+            }
+        }
+
+        // Chama a função para começar a rastrear
+        trackLocation();
+
+    </script>
+</body>
+</html>

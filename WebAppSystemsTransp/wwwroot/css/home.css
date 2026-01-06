@@ -1,0 +1,76 @@
+﻿body {
+    background: linear-gradient(135deg, #007bff, #00c6ff);
+    font-family: "Arial", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    padding: 20px;
+}
+
+.app-title {
+    font-size: 28px;
+    color: white;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 18px;
+    border-radius: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+    transition: 0.3s;
+    height: 100px;
+}
+
+    .menu-item i {
+        font-size: 36px;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+
+    .menu-item:hover {
+        background: #007bff;
+        color: white;
+        transform: scale(1.07);
+    }
+
+        .menu-item:hover i {
+            color: white;
+        }
+
+    .menu-item.logout {
+        background: #dc3545;
+        color: white;
+    }
+
+        .menu-item.logout i {
+            color: white;
+        }
+
+        .menu-item.logout:hover {
+            background: #c82333;
+            transform: scale(1.07);
+        }

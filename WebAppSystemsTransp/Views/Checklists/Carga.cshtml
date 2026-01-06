@@ -1,0 +1,354 @@
+﻿@model WebAppSystemsTransp.Models.Dto.ChecklistCargaDto
+
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+    }
+
+    .card {
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        max-width: 700px;
+    }
+
+    .field-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+        .field-container input,
+        .field-container select {
+            flex: 1;
+            margin-left: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+    .switch-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+        .switch-container label {
+            font-size: 16px;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .switch-container input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: #ccc;
+            border-radius: 10px;
+            position: relative;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+            .switch-container input[type="checkbox"]:checked {
+                background: #007bff;
+            }
+
+            .switch-container input[type="checkbox"]::before {
+                content: '';
+                position: absolute;
+                width: 18px;
+                height: 18px;
+                background: #fff;
+                border-radius: 50%;
+                top: 1px;
+                left: 1px;
+                transition: transform 0.3s;
+                transform: translateX(0);
+            }
+
+            .switch-container input[type="checkbox"]:checked::before {
+                transform: translateX(20px);
+            }
+    /* Estilização do botão deslizante */
+    .switch {
+        position: relative;
+        width: 50px;
+        height: 24px;
+    }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.3s;
+        border-radius: 24px;
+    }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+    input:checked + .slider {
+        background-color: #007bff;
+    }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+</style>
+
+
+<div class="card">
+    <!-- Cabeçalho -->
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <!-- Título do Pedido -->
+        <h3 class="mb-0">Pedido #@Model.PedidoId</h3>
+
+        <!-- Botão Voltar -->
+        <a asp-action="Details" asp-controller="Pedidos" asp-route-id="@Model.PedidoId" class="btn btn-primary btn-sm">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <!-- Corpo do Card -->
+    <div class="card-body">
+        <form asp-action="SalvarChecklist" asp-controller="Checklists" method="post">
+            <input type="hidden" name="PedidoId" value="@Model.PedidoId" />
+
+            <!-- Hora Inicial -->
+            <div class="field-container">
+
+                <label for="horaInicial">
+                    <i class="fas fa-clock" style="color: #007bff;"></i> Hora Início
+                </label>
+                @if (Model.IsRegistroExistente)
+                {
+                    <!-- Hora vinda do banco, exibida de forma estática e bloqueada -->
+                    <input id="horaInicial"
+                           name="HoraInicioDisplay"
+                           type="text"
+                           class="form-control"
+                           value="@(Model.HoraInicio > 0
+                   ? DateTimeOffset.FromUnixTimeMilliseconds(Model.HoraInicio).ToString("HH:mm:ss")
+                   : "")"
+                           readonly />
+                    <input type="hidden" name="HoraInicio" value="@Model.HoraInicio" />
+                }
+                else
+                {
+                    <!-- Hora dinâmica para novos registros -->
+                    <input id="horaInicial"
+                           name="HoraInicioDisplay"
+                           type="text"
+                           class="form-control"
+                           value=""
+                           readonly />
+                    <input type="hidden" id="horaInicialHidden" name="HoraInicio" value="0" />
+                    <script>
+                        // Atualiza a hora dinamicamente apenas para novos registros
+                        setInterval(() => {
+                            const now = new Date();
+                            const horaInput = document.getElementById('horaInicial');
+                            const hiddenInput = document.getElementById('horaInicialHidden');
+                            if (horaInput && hiddenInput) {
+                                horaInput.value = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                                hiddenInput.value = now.getTime();
+                            }
+                        }, 1000);
+                    </script>
+                }
+
+
+            </div>
+
+            <!-- KM Inicial -->
+            <div class="field-container">
+                <label for="kmInicial">
+                    <i class="fas fa-tachometer-alt" style="color: #007bff;"></i> KM Inicial
+                </label>
+                <input id="kmInicial"
+                       name="KmInicial"
+                       type="number"
+                       class="form-control"
+                       value="@Model.KmInicial"
+                @(Model.IsRegistroExistente ? "readonly" : "") />
+            </div>
+
+            @{
+                var opcoesCombustivel = new Dictionary<int, string>
+            {
+            { 0, "Selecionar" },
+            { 1, "Reserva" },
+            { 2, "1/4" },
+            { 3, "1/2" },
+            { 4, "3/4" },
+            { 5, "Cheio (F)" },
+            { 6, "Abastecimento" }
+            };
+
+                var isDisabled = Model.IsRegistroExistente ? "disabled" : "";
+            }
+
+            <div class="field-container">
+                <label for="combustivelInicial">
+                    <i class="fas fa-gas-pump" style="color: #007bff;"></i> Combustível Inicial
+                </label>
+
+                <select id="combustivelInicial" class="form-select" name="CombustivelInicial" required @isDisabled>
+                    @foreach (var opcao in opcoesCombustivel)
+                    {
+                        if (Model.CombustivelInicial == opcao.Key)
+                        {
+                            <option value="@opcao.Key" selected>@opcao.Value</option>
+                        }
+                        else
+                        {
+                            <option value="@opcao.Key">@opcao.Value</option>
+                        }
+                    }
+                </select>
+            </div>
+
+
+
+            <!-- Triângulo Homologado -->
+            <div class="field-container">
+                <label for="trianguloHomologado">
+                    <i class="fas fa-exclamation-triangle" style="color: #007bff;"></i> Triângulo Homologado
+                </label>
+                <label class="switch">
+                    <input type="checkbox" id="trianguloHomologado" name="TrianguloHomologado" value="1"
+                    @(Model.TrianguloHomologado == 1 ? "checked" : "")
+                    @(Model.IsRegistroExistente ? "disabled" : "") />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Colete Homologado -->
+            <div class="field-container">
+                <label for="coleteHomologado">
+                    <i class="fas fa-vest" style="color: #007bff;"></i> Colete Homologado
+                </label>
+                <label class="switch">
+                    <input type="checkbox" id="coleteHomologado" name="ColeteHomologado" value="1"
+                    @(Model.ColeteHomologado == 1 ? "checked" : "")
+                    @(Model.IsRegistroExistente ? "disabled" : "") />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Documento Seguro -->
+            <div class="field-container">
+                <label for="documentoSeguro">
+                    <i class="fas fa-file-signature" style="color: #007bff;"></i> Documento Seguro
+                </label>
+                <label class="switch">
+                    <input type="checkbox" id="documentoSeguro" name="DocumentoSeguro" value="1"
+                    @(Model.DocumentoSeguro == 1 ? "checked" : "")
+                    @(Model.IsRegistroExistente ? "disabled" : "") />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Documento Veículo -->
+            <div class="field-container">
+                <label for="documentoVeiculo">
+                    <i class="fas fa-car" style="color: #007bff;"></i> Documento Veículo
+                </label>
+                <label class="switch">
+                    <input type="checkbox" id="documentoVeiculo" name="DocumentoVeiculo" value="1"
+                    @(Model.DocumentoVeiculo == 1 ? "checked" : "")
+                    @(Model.IsRegistroExistente ? "disabled" : "") />
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="card text-center" style="margin-top: 20px;">
+                <!-- Botão Iniciar Recolha -->
+                <button type="submit"
+                        class="btn btn-primary"
+                @(Model.IsRegistroExistente ? "disabled" : "")>
+                    Iniciar Recolha
+                </button>
+
+                <!-- Botão Fotos -->
+                <a asp-controller="Checklists"
+                   asp-action="GetFotosCarga"
+                   asp-route-id="@Model.PedidoId"
+                   class="btn btn-secondary"
+                   style="margin-top: 10px;">
+                    Fotos
+                </a>
+            </div>
+
+
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleState(button, fieldName) {
+        const isOn = button.classList.contains('btn-success');
+        const newValue = isOn ? 0 : 1;
+
+        // Alterna o estilo do botão
+        button.classList.toggle('btn-success', !isOn);
+        button.classList.toggle('btn-secondary', isOn);
+
+        // Atualiza o texto do botão
+        button.innerHTML = newValue === 1 ? 'Ligado' : 'Desligado';
+
+        // Atualiza o valor do campo oculto
+        const hiddenInput = document.querySelector(`input[name="${fieldName}"]`);
+        if (hiddenInput) {
+            hiddenInput.value = newValue;
+        }
+    }
+</script>
+@if (!Model.IsRegistroExistente)
+{
+    <script>
+        // Atualiza a hora dinamicamente apenas se o registro for novo
+        setInterval(() => {
+            const now = new Date();
+            const horaInput = document.getElementById('horaInicial');
+            const hiddenInput = document.getElementById('horaInicialHidden');
+            if (horaInput && hiddenInput) {
+                horaInput.value = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                hiddenInput.value = now.getTime();
+            }
+        }, 1000);
+    </script>
+}
+
+

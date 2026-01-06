@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoramento de Veículos</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.11/signalr.min.js"></script>
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+
+        #controls {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Monitoramento de Veículos em Tempo Real</h2>
+    <div id="map"></div>
+
+    <script>
+        let map;
+        let vehicleMarkers = {};
+        let monitoring = false;
+
+        function initMap() {
+            map = L.map('map').setView([-23.55052, -46.633308], 12);  // São Paulo
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        }
+
+        function updateVehicleMarker(vehicleId, lat, lng) {
+            if (!vehicleMarkers[vehicleId]) {
+                vehicleMarkers[vehicleId] = L.marker([lat, lng]).addTo(map)
+                    .bindPopup(`Veículo ${vehicleId}`)
+                    .openPopup();
+            } else {
+                vehicleMarkers[vehicleId].setLatLng([lat, lng]);
+            }
+        }
+
+        async function getLocations() {
+            if (!monitoring) return;
+            try {
+                const response = await fetch('/Location/GetLocations');
+                const vehicleLocations = await response.json();
+                vehicleLocations.forEach(location => {
+                    updateVehicleMarker(location.Id, location.Latitude, location.Longitude);
+                });
+            } catch (error) {
+                console.error("Erro ao obter localizações:", error);
+            }
+        }
+
+        function sendLocation(lat, lng) {
+            fetch('/Location/Update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    Id: 1,  // ID do veículo, ajuste conforme necessário
+                    Latitude: lat,
+                    Longitude: lng,
+                    Timestamp: new Date().toISOString()
+                })
+            });
+        }
+
+        function trackLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition(position => {
+                    if (!monitoring) return;
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    document.getElementById("status").innerText = `Localização: ${lat}, ${lng}`;
+                    sendLocation(lat, lng);
+                }, error => {
+                    console.error("Erro ao obter localização:", error);
+                }, { enableHighAccuracy: true });
+            } else {
+                alert("Seu navegador não suporta geolocalização!");
+            }
+        }
+
+        trackLocation();
+
+        window.onload = () => {
+            initMap();
+            document.getElementById("status").innerText = "Clique em 'Iniciar Deslocamento' para começar.";
+        };
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/locationHub")
+            .build();
+
+        connection.on("ReceiveLocationUpdate", (vehicleId, lat, lng) => {
+            updateVehicleMarker(vehicleId, lat, lng);
+        });
+
+        connection.start().catch(err => console.error(err));
+    </script>
+
+    <p id="status">Obtendo localização...</p>
+</body>
+</html>

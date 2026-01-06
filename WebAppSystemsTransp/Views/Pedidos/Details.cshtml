@@ -1,0 +1,169 @@
+﻿@model WebAppSystemsTransp.Models.Pedido
+
+@{
+    ViewData["Title"] = $"Detalhes do Pedido {Model.Id}";
+}
+
+<style>
+    .detail-card {
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+    }
+
+    .field-label {
+        font-weight: bold;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .field-value {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 15px;
+    }
+
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .button-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #f8f9fa;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+
+        .button-item:hover {
+            background-color: #e9ecef;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-item.disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+
+    .button-icon {
+        font-size: 30px;
+        color: #007bff;
+        margin-bottom: 5px;
+    }
+
+        .button-icon.disabled {
+            color: #999;
+        }
+
+    .button-label {
+        font-size: 14px;
+        color: #333;
+    }
+
+        .button-label.disabled {
+            color: #999;
+        }
+</style>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <!-- Título do pedido -->
+        <h3 class="mb-0">Pedido #@Model.Id</h3>
+
+        <!-- Botão Voltar -->
+        <a asp-action="Index" asp-controller="Pedidos" class="btn btn-primary btn-sm">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="card-body">
+        <!-- Detalhes do Pedido -->
+        <div class="detail-card">
+            <div class="row">
+                <div class="col-md-6">
+                    <p>
+                        <span class="field-label">Matrícula do Veículo:</span>
+                        <span class="field-value">@Model.Veiculo?.Matricula"</span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p>
+                        <span class="field-label">Status:</span>
+                        <span class="field-value">@_getStatus(Model.HoraInicio, Model.HoraFinal)</span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p>
+                        <span class="field-label">Motorista:</span>
+                        <span class="field-value">@Model.Motorista?.Name</span>
+                    </p>
+                </div>
+            </div>
+            <p>
+                <span class="field-label">Tipo:</span>
+                <span class="field-value">@Model.TipoPedido </span>
+            </p>
+            <p>
+                <span class="field-label">Modelo:</span>
+                <span class="field-value">@Model.Veiculo.Modelo?.Nome </span>
+            </p>
+            <p>
+                <span class="field-label">Cliente Carga:</span>
+                <span class="field-value">@Model.ClienteCarga?.Nome </span>
+            </p>
+            <p>
+                <span class="field-label">Endereço Carga:</span>
+                <span class="field-value">@Model.ClienteCarga?.Local</span>
+            </p>
+            <p>
+                <span class="field-label">Cliente Descarga:</span>
+                <span class="field-value">@Model.ClienteDescarga?.Nome</span>
+            </p>
+            <p>
+                <span class="field-label">Endereço Descarga:</span>
+                <span class="field-value">@Model.ClienteDescarga?.Local</span>
+            </p>
+        </div>
+
+        <!-- Botões interativos -->
+        <div class="button-grid">
+            <div class="button-item">
+                <a asp-controller="Checklists" asp-action="Carga" asp-route-id="@Model.Id" class="text-decoration-none">
+                    <i class="fas fa-dolly button-icon"></i>
+                    <span class="button-label">Checklist Carga</span>
+                </a>
+            </div>
+            <div class="button-item @(Model.HoraInicio == null || Model.HoraInicio == TimeSpan.Zero ? "disabled" : "")">
+                <a asp-controller="Recolhas" asp-action="Index" class="button-link @(Model.HoraInicio == null || Model.HoraInicio == TimeSpan.Zero ? "disabled" : "")">
+                    <i class="fas fa-truck-loading button-icon @(Model.HoraInicio == null || Model.HoraInicio == TimeSpan.Zero ? "disabled" : "")"></i>
+                    <span class="button-label @(Model.HoraInicio == null || Model.HoraInicio == TimeSpan.Zero ? "disabled" : "")">Checklist Descarga</span>
+                </a>
+            </div>
+            
+            <div class="button-item">
+                <i class="fas fa-file-pdf button-icon"></i>
+                <span class="button-label">Documento</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string _getStatus(TimeSpan? horaInicio, TimeSpan? horaFinal)
+    {
+        if (horaFinal.HasValue && horaFinal != TimeSpan.Zero) return "Finalizado";
+        if (!horaInicio.HasValue || horaInicio == TimeSpan.Zero) return "Não iniciado";
+        return "Iniciado";
+    }
+}
